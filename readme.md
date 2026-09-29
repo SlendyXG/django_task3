@@ -24,7 +24,7 @@
 
 ### fix_marks(schoolkid_name)
 
-Заменяет все оценки 2 и 3 указанного ученика на 5.
+Заменяет все оценки 2 и 3 указанного ученика на 5. Обновление выполняется одним SQL-запросом через `update()` — количество обращений к базе не зависит от числа оценок в выборке.
 
     fix_marks('Фролов Иван Григорьевич')
 
@@ -45,7 +45,7 @@
 
 ### remove_chastisements(schoolkid_name)
 
-Удаляет все замечания указанного ученика.
+Удаляет все замечания указанного ученика. Замечания удаляются одним массовым `delete()` — количество запросов не зависит от числа записей.
 
     remove_chastisements('Фролов Иван Григорьевич')
 
@@ -81,10 +81,20 @@
     >>> create_commendation('Фролов Иван Григорьевич', 'Музыка')
     # без вывода — похвала создана
 
+## Поиск ученика
+
+Все три функции используют общий хелпер `get_schoolkid(schoolkid_name)`, который:
+
+- возвращает объект `Schoolkid`, если имя найдено однозначно;
+- печатает сообщение и возвращает `None`, если ученик не найден;
+- печатает сообщение и возвращает `None`, если под имя подходит несколько учеников.
+
+Благодаря этому логика поиска и обработки ошибок живёт в одном месте, а не дублируется в каждой функции.
+
 ## Полный сценарий использования
 
-    from datacenter.utils import fix_marks, remove_chastisements, create_commendation
-    from datacenter.models import Mark, Chastisement, Schoolkid, Lesson, Commendation
+    from datacenter.scripts import fix_marks, remove_chastisements, create_commendation
+    from datacenter.models import Mark, Chastisement, Schoolkid, Commendation
 
     name = 'Фролов Иван Григорьевич'
 

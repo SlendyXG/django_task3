@@ -3,46 +3,36 @@ from django.core.exceptions import ObjectDoesNotExist
 from datacenter.models import Mark, Chastisement, Schoolkid, Lesson, Commendation
 
 
-def fix_marks(schoolkid_name):
+def get_schoolkid(schoolkid_name):
     try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=schoolkid_name)
+        return Schoolkid.objects.get(full_name__contains=schoolkid_name)
     except ObjectDoesNotExist:
         print(f'Ученик по запросу {schoolkid_name!r} не найден.')
-        return
     except Schoolkid.MultipleObjectsReturned:
         print(f'По запросу {schoolkid_name!r} найдено несколько учеников, '
               f'уточните имя.')
+    return None
+
+
+def fix_marks(schoolkid_name):
+    schoolkid = get_schoolkid(schoolkid_name)
+    if schoolkid is None:
         return
 
-    bad_marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
-    for mark in bad_marks:
-        mark.points = 5
-        mark.save()
+    Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3]).update(points=5)
 
 
 def remove_chastisements(schoolkid_name):
-    try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=schoolkid_name)
-    except ObjectDoesNotExist:
-        print(f'Ученик по запросу {schoolkid_name!r} не найден.')
-        return
-    except Schoolkid.MultipleObjectsReturned:
-        print(f'По запросу {schoolkid_name!r} найдено несколько учеников, '
-              f'уточните имя.')
+    schoolkid = get_schoolkid(schoolkid_name)
+    if schoolkid is None:
         return
 
     Chastisement.objects.filter(schoolkid=schoolkid).delete()
 
 
 def create_commendation(schoolkid_name, subject_title):
-    try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=schoolkid_name)
-    except ObjectDoesNotExist:
-        print(f'Ученик по запросу {schoolkid_name!r} не найден.')
-        return
-    except Schoolkid.MultipleObjectsReturned:
-        print(f'По запросу {schoolkid_name!r} найдено несколько учеников, '
-              f'уточните имя.')
+    schoolkid = get_schoolkid(schoolkid_name)
+    if schoolkid is None:
         return
 
     lesson = Lesson.objects.filter(
